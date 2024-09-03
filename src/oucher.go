@@ -43,6 +43,7 @@ type configuration struct {
 	Delay      int      `mapstructure:"delay"`
 
 	OuchOnStart bool `mapstructure:"ouchOnStart"`
+	OuchChance int `mapstructure:"ouchChance"`  // New: Percent chance that an ouch will trigger. If not configured, it will always trigger.
 }
 
 func main() {
@@ -286,6 +287,15 @@ func processLine(line string, phrases []phrase, config *configuration) {
 
 	log.Debugf("Received valid line: %s", line)
 
+	// If there is a valid OuchChance set, decide if an Ouch will play this time. If not, do nothing. 
+	if config.OuchChance > 0 && config.OuchChance <= 100 {
+    		if rand.Intn(100) >= config.OuchChance {
+        		log.Debugf("Ouch chance of %d%% not met, skipping ouch", config.OuchChance)
+        		return
+    		}
+    	log.Debugf("Ouch chance of %d%% met, triggering ouch", config.OuchChance)
+	}
+	
 	// If the voices set is empty, do nothing
 	if len(phrases) == 0 {
 		log.Warn("No phrases or sounds!")
